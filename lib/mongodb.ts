@@ -1,6 +1,6 @@
-import { Db, Document, InsertOneResult, WithId, MongoClient } from "mongodb";
+import { Db, InsertOneResult, WithId, MongoClient } from "mongodb";
 import * as model from "../model";
-``;
+
 const uri = process.env.MONGODB_URI;
 const options = {};
 
@@ -29,11 +29,19 @@ export async function connectToDB(): Promise<Db> {
   return mongo.db("eventRegistrationDB");
 }
 
+export const CollectionNames = {
+  events: "events",
+  parentguardians: "parentguardians",
+  participants: "participants",
+  coaches: "coaches",
+  volunteers: "volunteers",
+};
+
 export async function findEvent(
   mongo: Db,
   event: model.Event
 ): Promise<WithId<model.Event> | null> {
-  return mongo.collection<model.Event>("events").findOne({
+  return mongo.collection<model.Event>(CollectionNames.events).findOne({
     name: event.name,
     start_date: event.start_date,
     end_date: event.end_date,
@@ -44,27 +52,39 @@ export async function findParentGuardian(
   mongo: Db,
   parentGuardian: model.ParentGuardian
 ): Promise<WithId<model.ParentGuardian> | null> {
-  return mongo.collection<model.ParentGuardian>("parentguardians").findOne({
-    email: parentGuardian.email,
-  });
+  return mongo
+    .collection<model.ParentGuardian>(CollectionNames.parentguardians)
+    .findOne({
+      email: parentGuardian.email,
+    });
 }
 
 export async function findParticipant(
   mongo: Db,
   participant: model.Participant
 ): Promise<WithId<model.Participant> | null> {
-  return mongo.collection<model.Participant>("participants").findOne({
-    name: participant.name,
-  });
+  return mongo
+    .collection<model.Participant>(CollectionNames.participants)
+    .findOne({
+      name: participant.name,
+    });
 }
 
 export async function findVolunteer(
   mongo: Db,
   volunteer: model.Volunteer
 ): Promise<WithId<model.Volunteer> | null> {
-  return mongo.collection<model.Volunteer>("volunteers").findOne({
+  return mongo.collection<model.Volunteer>(CollectionNames.volunteers).findOne({
     email: volunteer.email,
-    date: volunteer.date, // search for volunteer based off of email
+  });
+}
+
+export async function findCoach(
+  mongo: Db,
+  coach: model.Coach
+): Promise<WithId<model.Coach> | null> {
+  return mongo.collection<model.Coach>(CollectionNames.coaches).findOne({
+    email: coach.email,
   });
 }
 
@@ -80,7 +100,7 @@ export async function storeParentGuardian(
   parent_guardian: model.ParentGuardian
 ): Promise<InsertOneResult<model.ParentGuardian>> {
   return mongo
-    .collection<model.ParentGuardian>("parentguardians")
+    .collection<model.ParentGuardian>(CollectionNames.parentguardians)
     .insertOne(parent_guardian);
 }
 
@@ -90,7 +110,7 @@ export async function storeParticipant(
 ): Promise<InsertOneResult<model.Participant>> {
   ``;
   return mongo
-    .collection<model.Participant>("participants")
+    .collection<model.Participant>(CollectionNames.participants)
     .insertOne(participant);
 }
 
@@ -98,7 +118,18 @@ export async function storeVolunteer(
   mongo: Db,
   volunteer: model.Volunteer
 ): Promise<InsertOneResult<model.Volunteer>> {
-  return mongo.collection<model.Volunteer>("volunteers").insertOne(volunteer);
+  return mongo
+    .collection<model.Volunteer>(CollectionNames.volunteers)
+    .insertOne(volunteer);
+}
+
+export async function storeCoach(
+  mongo: Db,
+  coach: model.Coach
+): Promise<InsertOneResult<model.Coach>> {
+  return mongo
+    .collection<model.Coach>(CollectionNames.coaches)
+    .insertOne(coach);
 }
 
 export async function updateEvent(
@@ -106,6 +137,6 @@ export async function updateEvent(
   event: WithId<model.Event>
 ): Promise<void> {
   await mongo
-    .collection<model.Event>("events")
+    .collection<model.Event>(CollectionNames.events)
     .updateOne({ _id: event._id }, event);
 }
