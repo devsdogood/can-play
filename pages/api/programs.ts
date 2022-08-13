@@ -51,7 +51,6 @@ async function newEvent(
   return event.insertedId.toHexString();
 }
 
-
 async function newProgram(
   name: string,
   startingEventUUIDs: string[],
@@ -59,11 +58,11 @@ async function newProgram(
 ): Promise<string> {
   const out: model.Program = {
     name: name,
-    events: ((startingEventUUIDs.length > 0) ? startingEventUUIDs : [])
+    events: startingEventUUIDs.length > 0 ? startingEventUUIDs : [],
   };
 
   const event = await mongo.collection("Programs").insertOne(out);
-  
+
   return event.insertedId.toHexString();
 }
 
@@ -71,15 +70,18 @@ async function appendToProgram(
   programUUID: string,
   eventUUID: string,
   mongo: Db
-) : Promise<string> {
-  const out = await mongo.collection<model.Program>("Programs").findOne({_id: new ObjectId(programUUID)});
+): Promise<string> {
+  const out = await mongo
+    .collection<model.Program>("Programs")
+    .findOne({ _id: new ObjectId(programUUID) });
   if (out) {
     out?.events.push(eventUUID);
-    mongo.collection<model.Program>("Programs").updateOne({ _id: new ObjectId(programUUID)}, out);
+    mongo
+      .collection<model.Program>("Programs")
+      .updateOne({ _id: new ObjectId(programUUID) }, out);
   }
   return programUUID;
 }
-
 
 function retrieveProgram(
   uuid: string,
@@ -91,42 +93,34 @@ function retrieveProgram(
 }
 
 function retrieveEvent(
-    uuid: string,
-    mongo: Db
-) : Promise<WithId<model.Event> | null> {
-    return mongo
-        .collection<model.Event>("events")
-        .findOne({ _id: new ObjectId(uuid) });
+  uuid: string,
+  mongo: Db
+): Promise<WithId<model.Event> | null> {
+  return mongo
+    .collection<model.Event>("events")
+    .findOne({ _id: new ObjectId(uuid) });
+}
+
+async function retrievePersonUUID(
+  name: string,
+  eventUUID: string,
+  mongo: Db
+): Promise<string> {
+  const out = mongo
+    .collection<model.Event>("events")
+    .findOne({ _id: new ObjectId(eventUUID) });
+
+  out.
+  return Promise.resolve("");
 }
 
 async function setPersonAsPresent(
-    eventUUID: string,
-    userUUID: string,
-    mongo: Db
-) : Promise<string> {
-    const out = mongo.collection<model.Event>("events").findOne({ _id: new ObjectId(eventUUID)})
-
+  eventUUID: string,
+  userUUID: string,
+  mongo: Db
+): Promise<string> {
+  const out = mongo
+    .collection<model.Event>("events")
+    .findOne({ _id: new ObjectId(eventUUID) });
+    return Promise.resolve("");
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
