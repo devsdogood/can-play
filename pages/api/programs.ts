@@ -1,8 +1,8 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
-import * as model from "../../model/";
+import * as model from "../../model/event-registration-db";
 import { Db, WithId, ObjectId } from "mongodb";
 
-function newEvent(
+async function newEvent(
   coachesUUID: string[],
   volunteersUUID: string[],
   participantsUUID: string[],
@@ -10,7 +10,7 @@ function newEvent(
   start_date: string,
   end_date: string,
   mongo: Db
-): model.Event {
+): Promise<string> {
   let coachAttendances: model.EventAttendance[] = [];
   let volunteerAttendances: model.EventAttendance[] = [];
   let participantAttendances: model.EventAttendance[] = [];
@@ -39,53 +39,47 @@ function newEvent(
     participantAttendances.push(out);
   }
 
-  const event: model.Event = {
+  const event = await mongo.collection<model.Event>("events").insertOne({
     name: name,
     start_date: start_date,
     end_date: end_date,
     coaches: coachAttendances,
     volunteers: volunteerAttendances,
     participants: participantAttendances,
-  };
+  });
 
-  mongo.collection("events").insertOne(event);
-
-  return event;
+  return event.insertedId.toHexString();
 }
 
-function getEvent(
-    name: string,
-    mongo: Db
-) : model.Event {
-    
-    let out = Promise<WithId("")>mongo
-        .collection<model.Event>("events")
-        .findOne({name: name})
 
-}
-
-function newProgram(
+async function newProgram(
   name: string,
   startingEventUUIDs: string[],
   mongo: Db
-): model.Program {
+): Promise<string> {
   const out: model.Program = {
     name: name,
     events: ((startingEventUUIDs.length > 0) ? startingEventUUIDs : [])
   };
 
-  mongo.collection("Programs").insertOne(out);
+  const event = await mongo.collection("Programs").insertOne(out);
   
-  return out;
+  return event.insertedId.toHexString();
 }
 
-function appendToProgram(
-  program: model.Program,
-  eventUUID: string
-): model.Program {
-  program.events.push(eventUUID);
-  return program;
+async function appendToProgram(
+  programUUID: string,
+  eventUUID: string,
+  mongo: Db
+) : Promise<string> {
+  const out = await mongo.collection<model.Program>("Programs").findOne({_id: new ObjectId(programUUID)});
+  if (out) {
+    out?.events.push(eventUUID);
+    mongo.collection<model.Program>("Programs").updateOne({ _id: new ObjectId(programUUID)}, out);
+  }
+  return programUUID;
 }
+
 
 function retrieveProgram(
   uuid: string,
@@ -95,3 +89,44 @@ function retrieveProgram(
     .collection<model.Program>("Programs")
     .findOne({ _id: new ObjectId(uuid) });
 }
+
+function retrieveEvent(
+    uuid: string,
+    mongo: Db
+) : Promise<WithId<model.Event> | null> {
+    return mongo
+        .collection<model.Event>("events")
+        .findOne({ _id: new ObjectId(uuid) });
+}
+
+async function setPersonAsPresent(
+    eventUUID: string,
+    userUUID: string,
+    mongo: Db
+) : Promise<string> {
+    const out = mongo.collection<model.Event>("events").findOne({ _id: new ObjectId(eventUUID)})
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

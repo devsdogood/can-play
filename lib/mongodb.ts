@@ -1,5 +1,5 @@
 import { Db, InsertOneResult, WithId, MongoClient } from "mongodb";
-import * as model from "../model";
+import * as model from "../model/event-registration-db";
 
 const uri = process.env.MONGODB_URI;
 const options = {};
@@ -75,7 +75,7 @@ export async function findVolunteer(
   volunteer: model.Volunteer
 ): Promise<WithId<model.Volunteer> | null> {
   return mongo.collection<model.Volunteer>(CollectionNames.volunteers).findOne({
-    email: volunteer.email,
+    //email: volunteer.email,
   });
 }
 
