@@ -101,26 +101,17 @@ function retrieveEvent(
     .findOne({ _id: new ObjectId(uuid) });
 }
 
-async function retrievePersonUUID(
-  name: string,
-  eventUUID: string,
-  mongo: Db
-): Promise<string> {
-  const out = mongo
-    .collection<model.Event>("events")
-    .findOne({ _id: new ObjectId(eventUUID) });
-
-  out.
-  return Promise.resolve("");
-}
 
 async function setPersonAsPresent(
   eventUUID: string,
   userUUID: string,
+  personType: string = "coaches",
   mongo: Db
 ): Promise<string> {
   const out = mongo
     .collection<model.Event>("events")
     .findOne({ _id: new ObjectId(eventUUID) });
+
+
     return Promise.resolve("");
 }
