@@ -17,6 +17,7 @@ export default async function handler(
   const { query } = useRouter();
   const collection = query.collection as string;
   if (
+    req.method === "PUT" &&
     Object.values(mongo.CollectionNames).includes(collection) &&
     req?.body?._id
   ) {

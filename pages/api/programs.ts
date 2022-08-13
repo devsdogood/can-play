@@ -54,10 +54,13 @@ function newEvent(
 }
 
 function getEvent(
-    name: string
+    name: string,
+    mongo: Db
 ) : model.Event {
     
-    
+    let out = Promise<WithId("")>mongo
+        .collection<model.Event>("events")
+        .findOne({name: name})
 
 }
 

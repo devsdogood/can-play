@@ -2,18 +2,18 @@ PROGRAM
 =======
 A program is a group of events (eg. 8th Grade Soccer).
 
-info|doc|is optional
--|-|-
-NAME|the name of the program|no
-EVENTS|the events that will take place|temp
+info|doc|is optional|type
+-|-|-|-
+NAME|the name of the program|no|string
+EVENTS|the events that will take place|temp|[UUID]
 HOSTS|who is hosting the event|yes
 
 
 EVENT
 =====
 An event is where people meet.
-info|doc|is optional
--|-|-
+info|doc|is optional|type
+-|-|-|-
 NAME|The name of the event|no
 PROGRAM ID|The id of the program in which this event is contained|yes
 START DATE|The date upon which this event starts|temp
@@ -30,7 +30,7 @@ info|doc|is optional
 NAME|The coach's name|no
 ADDRESS|Where the coach lives|no
 EMPLOYER|Who the coach works for|no
-SCHOOL ATTENDING|Where the coach goes to school
+SCHOOL ATTENDING|Where the coach goes to school|yes
 ```
  address: string;
   employer?: string;
@@ -51,4 +51,4 @@ info|doc|is op
 NAME | The participants name | no
 BIRTH DATE | The day the participant was born | no
 GRADE | The grade in school the participant is in| no
-T-SHIRT SIZE | The size of t-shirt the participant wears | 
+T-SHIRT SIZE | The size of t-shirt the participant wears | no
