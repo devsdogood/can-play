@@ -1,5 +1,6 @@
 import { Box } from "@mui/material";
 import { DataGrid, GridRowsProp, GridColDef } from "@mui/x-data-grid";
+import { connectToDB } from "../lib/mongodb";
 
 const rows: GridRowsProp = [
   {
@@ -45,6 +46,24 @@ const rows: GridRowsProp = [
     notes: "",
   },
 ];
+
+export async function getServerSideProps() {
+  const mongo = await connectToDB();
+  const cursor = await mongo.collection("volunteers").find().toArray();
+  const volunteers = cursor.map((doc) => ({
+    ...doc,
+    _id: null,
+    id: doc._id.toString(),
+    firstName: doc.name[0],
+    lastName: doc.name[1],
+    emergencyContactName: doc.emergency_contact.name,
+    emergencyContactPhone: doc.emergency_contact.contact_info.phone_number,
+  }));
+
+  return {
+    props: { participants: volunteers },
+  };
+}
 
 const columns: GridColDef[] = [
   { field: "Name", headerName: "Name", editable: true, valueGetter: (params) => params.row.firstName + " " + params.row.lastName },

@@ -1,18 +1,27 @@
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
-
+import Button from "@mui/material/Button";
 import styles from "../styles/Upload.module.css";
 
 function DragDropPage() {
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    var data = new FormData();
-    data.append("file", acceptedFiles[0]);
+  const [files, setFiles] = useState<File[] | null>(null);
 
-    fetch('/api/form-data', {
-      method: 'POST',
-      body: data
-    })
+  const handleSubmit = () => {
+    if (files) {
+      var data = new FormData();
+      data.append("file", files[0]);
+
+      fetch("/api/form-data", {
+        method: "POST",
+        body: data,
+      });
+    }
+  };
+
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    setFiles(acceptedFiles);
   }, []);
+
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
@@ -21,17 +30,53 @@ function DragDropPage() {
   });
 
   return (
-    <section className={styles.thing}>
+    <section>
       <div className={styles.welcomediv}>
         <h1 className={styles.welcome}>Welcome!</h1>
       </div>
-      <div {...getRootProps({ className: styles.dropzone })}>
-        <input {...getInputProps()} />
-        {isDragActive ? (
-          <p>Drop the files here ...</p>
-        ) : (
-          <p>Drag and drop some files here, or click to select files</p>
-        )}
+
+      <div id="regestration">
+        <div {...getRootProps({ className: styles.regestration })}>
+          <input {...getInputProps()} />
+          {isDragActive ? (
+            <p>Drop the files here ...</p>
+          ) : (
+            <p>Drag and drop a CSV file for coaches</p>
+          )}
+        </div>
+      </div>
+
+      <div id="event">
+        <div {...getRootProps({ className: styles.event })}>
+          <input {...getInputProps()} />
+          {isDragActive ? (
+            <p>Drop the files here ...</p>
+          ) : (
+            <p>Drag and drop a CSV file for events</p>
+          )}
+        </div>
+      </div>
+
+      <div id="coach">
+        <div {...getRootProps({ className: styles.coach })}>
+          <input {...getInputProps()} />
+          {isDragActive ? (
+            <p>Drop the files here ...</p>
+          ) : (
+            <p>Drag and drop a CSV file for coaches</p>
+          )}
+        </div>
+      </div>
+
+      <div id="volunteer">
+        <div {...getRootProps({ className: styles.volunteer })}>
+          <input {...getInputProps()} />
+          {isDragActive ? (
+            <p>Drop the files here ...</p>
+          ) : (
+            <p>Drag and drop a CSV file for volunteers</p>
+          )}
+        </div>
       </div>
     </section>
   );

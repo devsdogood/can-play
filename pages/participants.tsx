@@ -81,7 +81,7 @@ export async function getServerSideProps() {
     id: doc._id.toString(),
     firstName: doc.name[0],
     lastName: doc.name[1],
-    emergencyContactName: doc.emergency_contact.name,
+    emergencyContactName: doc.emergency_contact.name[0] + " " + doc.emergency_contact.name[1],
     emergencyContactPhone: doc.emergency_contact.contact_info.phone_number,
   }));
 
