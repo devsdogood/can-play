@@ -1,4 +1,4 @@
-import { MongoClient } from "mongodb";
+import { MongoClient, Db } from "mongodb";
 
 const uri = process.env.MONGODB_URI;
 const options = {};
@@ -23,8 +23,8 @@ if (process.env.NODE_ENV === "development") {
   clientPromise = client.connect();
 }
 
-export async function connectToDB() {
+export async function connectToDB(): Promise<Db> {
   const mongo = await clientPromise;
-  mongo.db("eventRegistrationDB");
-  return mongo;
+  return mongo.db("eventRegistrationDB");
+
 }

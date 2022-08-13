@@ -1,12 +1,12 @@
-import csvParse from "csv-parse";
+import * as csvParse from "csv-parse";
 import fs from "fs";
 
-export async function parseCsv(filePath: string): Promise<Record<string, any>> {
+export async function parseCsv(filePath: string): Promise<Record<string, string>[]> {
   const parser = fs
     .createReadStream(filePath)
     .pipe(csvParse.parse({ columns: true }));
 
-  const records: Record<string, any>[] = [];
+  const records: Record<string, string>[] = [];
   for await (const record of parser) {
     records.push(record);
   }
