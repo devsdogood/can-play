@@ -1,5 +1,6 @@
-import { MongoClient, Db } from "mongodb";
-
+import { Db, Document, InsertOneResult, WithId, MongoClient } from "mongodb";
+import * as model from "../model";
+``;
 const uri = process.env.MONGODB_URI;
 const options = {};
 
@@ -26,5 +27,85 @@ if (process.env.NODE_ENV === "development") {
 export async function connectToDB(): Promise<Db> {
   const mongo = await clientPromise;
   return mongo.db("eventRegistrationDB");
+}
 
+export async function findEvent(
+  mongo: Db,
+  event: model.Event
+): Promise<WithId<model.Event> | null> {
+  return mongo.collection<model.Event>("events").findOne({
+    name: event.name,
+    start_date: event.start_date,
+    end_date: event.end_date,
+  });
+}
+
+export async function findParentGuardian(
+  mongo: Db,
+  parentGuardian: model.ParentGuardian
+): Promise<WithId<model.ParentGuardian> | null> {
+  return mongo.collection<model.ParentGuardian>("parentguardians").findOne({
+    email: parentGuardian.email,
+  });
+}
+
+export async function findParticipant(
+  mongo: Db,
+  participant: model.Participant
+): Promise<WithId<model.Participant> | null> {
+  return mongo.collection<model.Participant>("participants").findOne({
+    name: participant.name,
+  });
+}
+
+export async function findVolunteer(
+  mongo: Db,
+  volunteer: model.Volunteer
+): Promise<WithId<model.Volunteer> | null> {
+  return mongo.collection<model.Volunteer>("volunteers").findOne({
+    email: volunteer.email,
+    date: volunteer.date, // search for volunteer based off of email
+  });
+}
+
+export async function storeEvent(
+  mongo: Db,
+  event: model.Event
+): Promise<InsertOneResult<model.Event>> {
+  return mongo.collection<model.Event>("events").insertOne(event);
+}
+
+export async function storeParentGuardian(
+  mongo: Db,
+  parent_guardian: model.ParentGuardian
+): Promise<InsertOneResult<model.ParentGuardian>> {
+  return mongo
+    .collection<model.ParentGuardian>("parentguardians")
+    .insertOne(parent_guardian);
+}
+
+export async function storeParticipant(
+  mongo: Db,
+  participant: model.Participant
+): Promise<InsertOneResult<model.Participant>> {
+  ``;
+  return mongo
+    .collection<model.Participant>("participants")
+    .insertOne(participant);
+}
+
+export async function storeVolunteer(
+  mongo: Db,
+  volunteer: model.Volunteer
+): Promise<InsertOneResult<model.Volunteer>> {
+  return mongo.collection<model.Volunteer>("volunteers").insertOne(volunteer);
+}
+
+export async function updateEvent(
+  mongo: Db,
+  event: WithId<model.Event>
+): Promise<void> {
+  await mongo
+    .collection<model.Event>("events")
+    .updateOne({ _id: event._id }, event);
 }

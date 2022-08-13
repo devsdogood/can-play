@@ -1,8 +1,8 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
-import { Db, Document, InsertOneResult } from "mongodb";
+import { Db, Document, InsertOneResult, WithId } from "mongodb";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { hasFileUpload, toJsonRecords } from "../../lib/file-upload-util";
-import { connectToDB } from "../../lib/mongodb";
+import * as mongo from "../../lib/mongodb";
 import * as model from "../../model";
 
 interface ResponseData {
@@ -15,39 +15,14 @@ export default async function handler(
 ) {
   if (hasFileUpload(req)) {
     try {
-      const mongo = await connectToDB();
+      const client = await mongo.connectToDB();
       const records = await toJsonRecords(req);
 
-      const event: model.Event = {
-        name: "",
-        coaches: [],
-        volunteers: [],
-        participants: [],
-        details: {},
-      };
-
-      for (const record of records) {
-        const registration = transform(record);
-        if (!event.name) {
-          event.name = registration.event.name;
-        }
-
-        const insertedParent = await storeParentGuardian(
-          mongo,
-          registration.parent_guardian
-        );
-
-        const insertedParticipant = await storeParticipant(mongo, {
-          ...registration.participant,
-          parent_guardian_id: insertedParent.insertedId.toHexString(),
-        });
-
-        event.participants.push({
-          id: insertedParticipant.insertedId.toHexString(),
-          name: registration.participant.name,
-        });
+      if (records?.[0]?.["Task"] === "Volunteer") {
+        await processVolunteerRegistrationCsv(client, records);
+      } else {
+        await processEventRegistrationCsv(client, records);
       }
-      await storeEvent(mongo, event);
 
       res.status(200).send({ message: "Success" });
     } catch (e) {
@@ -60,12 +35,15 @@ export default async function handler(
 }
 
 function transform(record: Record<string, string>): model.EventRegistration {
-  const event: Pick<model.Event, "name"> = {
+  const event = <model.Event>{
     name: record["Event"],
+    start_date: record["Start Date & Time"],
+    end_date: record["End Date & Time"],
   };
   const parent_guardian: model.ParentGuardian = {
     name: record["Name"]?.split(" ") || [],
-    contact_info: [record["Parent/Guardian Phone Number"], record["Email"]],
+    phone_number: record["Parent/Guardian Phone Number"],
+    email: record["Email"],
     employer: record["employer"],
     address: record["Address"],
     payment_method: {
@@ -76,7 +54,6 @@ function transform(record: Record<string, string>): model.EventRegistration {
   const participant: model.Participant = {
     parent_guardian_id: "",
     name: record["Participant's  name "]?.split(" ") || [],
-    age: Number(record["Participant's  age"]),
     birth_date: record["Participant's date of birth  (MM/DD/YYYY)"],
     grade: record["Participant's grade"],
     tshirt_size: record["Participant's T-shirt size"],
@@ -84,40 +61,101 @@ function transform(record: Record<string, string>): model.EventRegistration {
     food_restrictions: record["Please list food restrictions for participant"],
     notes: record["Attachments"],
     emergency_contact: {
-      name: record["Emergency contact name (if different)"]
-        ? record["Emergency contact name (if different)"].split(" ")
-        : parent_guardian.name,
-      info: record["Emergency contact phone (if different)"]
-        ? [record["Emergency contact phone (if different)"]]
-        : parent_guardian.contact_info,
+      name: record["Emergency contact name (if different)"]?.split(" "),
+      contact_info: {
+        phone_number: record["Emergency contact phone (if different)"],
+      },
     },
+    attended: false
   };
+    
+
   return {
-    event: event as model.Event,
+    event,
     parent_guardian,
     participant,
   };
 }
 
-async function storeEvent(
-  mongo: Db,
-  event: model.Event
-): Promise<InsertOneResult<Document>> {
-  return mongo.collection("events").insertOne(event);
+async function processEventRegistrationCsv(
+  client: Db,
+  records: Record<string, string>[]
+): Promise<any> {
+  const event: model.Event = {
+    name: "",
+    start_date: "",
+    end_date: "",
+    coaches: [],
+    volunteers: [],
+    participants: [],
+  };
+
+  for (const record of records) {
+    const registration = transform(record);
+    if (!event.name) {
+      event.name = registration.event.name;
+      event.start_date = registration.event.start_date;
+      event.end_date = registration.event.end_date;
+    }
+
+    const [existingPG, existingParticipant] = await Promise.all([
+      mongo.findParentGuardian(client, registration.parent_guardian),
+      mongo.findParticipant(client, registration.participant),
+    ]);
+
+    const parent_guardian_id = existingPG
+      ? existingPG._id.toHexString()
+      : (
+          await mongo.storeParentGuardian(client, registration.parent_guardian)
+        ).insertedId.toHexString();
+
+    const participant_id = existingParticipant
+      ? existingParticipant._id.toHexString()
+      : (
+          await mongo.storeParticipant(client, {
+            ...registration.participant,
+            parent_guardian_id,
+          })
+        ).insertedId.toHexString();
+
+    event.participants.push({
+      id: participant_id,
+      name: registration.participant.name,
+      attended: false,
+    });
+  }
+
+  const existingEvent = await mongo.findEvent(client, event);
+  if (existingEvent) {
+    return mongo.updateEvent(client, {
+      ...event,
+      _id: existingEvent._id,
+    });
+  } else {
+    return mongo.storeEvent(client, event);
+  }
 }
 
-async function storeParentGuardian(
-  mongo: Db,
-  parent_guardian: model.ParentGuardian
-): Promise<InsertOneResult<Document>> {
-  return mongo.collection("parentguardians").insertOne(parent_guardian);
-}
-
-async function storeParticipant(
-  mongo: Db,
-  participant: model.Participant
-): Promise<InsertOneResult<Document>> {
-  return mongo.collection("participants").insertOne(participant);
+async function processVolunteerRegistrationCsv(
+  client: Db,
+  records: Record<string, string>[]
+) {
+  for (const record of records) {
+    const volunteer: model.Volunteer = {
+      name: record["Who"]?.split(" ") || [],
+      start_time: record["Start Time"],
+      end_time: record["End Time"],
+      date: record["Date"],
+      email: record["Email"],
+      phone_number: record["Phone"],
+    };
+    const existingVolunteer = await mongo.findVolunteer(client, volunteer);
+    const volunteer_id = existingVolunteer
+      ? existingVolunteer?._id.toHexString()
+      : (
+          await mongo.storeVolunteer(client, volunteer)
+        ).insertedId.toHexString();
+  }
 }
 
 export const config = {
