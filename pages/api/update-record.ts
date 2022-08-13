@@ -13,6 +13,7 @@ export default async function handler(
 ) {
   
 
+  req.body as model.Volunteer;
   res.status(200).send({message: "Success"});
   // update volunteer, coach, participant, parent/guardian record
   
@@ -55,8 +56,9 @@ function transform(record: Record<string, string>): model.EventRegistration {
     },
     attended: false,
   };
-  const volunteer: model.Volunteer = {
+  const volunteer : model.Volunteer = {
     name: record["Who"]?.split(" ") || [],
+    date: record["Date"],
     start_time: record["Start Time"],
     end_time: record["End Time"],
     email: record["Email"],

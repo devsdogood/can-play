@@ -46,14 +46,14 @@ export interface ParentGuardian extends Person {
 
 export interface Coach extends Person {
   address: string;
-  employer: string;
-  school_attending: string;
-  expertise: string; // Sport in which the coach, coaches. e.g. Basketball
+  employer?: string;
+  school_attending?: string;
+  expertise?: string; // Sport in which the coach, coaches. e.g. Basketball
   date_of_background_check: string;
   training_date: string;
-  signed_job_desc: string;
-  signed_handbook: string;
-  payment_info: PaymentInfo;
+  signed_job_desc?: string;
+  signed_handbook?: string;
+  payment_info?: PaymentInfo;
   notes?: string;
 }
 
@@ -94,13 +94,13 @@ export type EventAttendance = {
 
 export interface Program {
   name: string;
-  events: Event[];
+  events: string[];
   hosts?: Person[];
 }
 
 export interface Event {
   program_id?: string;
-  name?: string;
+  name: string;
   start_date?: string;
   end_date?: string;
   coaches: EventAttendance[];
