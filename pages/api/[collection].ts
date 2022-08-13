@@ -3,7 +3,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { useRouter } from "next/router";
 import * as mongo from "../../lib/mongodb";
 import { ObjectId } from "mongodb";
-import * as model from "../../model";
+import * as model from "../../model/event-registration-db";
 
 type Data = {
   message: string;

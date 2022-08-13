@@ -4,17 +4,20 @@ import fs from "fs";
 import { NextApiRequest } from "next";
 import os from "os";
 import path from "path";
+import { MultipartForm } from "../model/form-data";
 
 const random = (() => {
   const buf = Buffer.alloc(16);
   return () => randomFillSync(buf).toString("hex");
 })();
 
-export async function saveUploadedFiles(req: NextApiRequest): Promise<string[]> {
+export async function saveUploadedFiles(
+  req: NextApiRequest
+): Promise<MultipartForm> {
   return new Promise((resolve, reject) => {
     const bb = busboy({ headers: req.headers });
 
-    const filePaths = Array<string>();
+    const form: MultipartForm = { files: [], fields: {} };
 
     bb.on("file", (name, file, info) => {
       const { filename, encoding, mimeType } = info;
@@ -23,13 +26,14 @@ export async function saveUploadedFiles(req: NextApiRequest): Promise<string[]> 
       );
       const saveTo = path.join(os.tmpdir(), `busboy-upload-${random()}`);
       file.pipe(fs.createWriteStream(saveTo));
-      filePaths.push(saveTo);
+      form.files.push(saveTo);
     });
     bb.on("field", (name, val, info) => {
+      form.fields[name] = val;
       console.log(`Field [${name}]: value: ${val}\n, info: ${info}`);
     });
     bb.on("close", () => {
-      resolve(filePaths);
+      resolve(form);
     });
     bb.on("error", (error) => {
       reject(error);
