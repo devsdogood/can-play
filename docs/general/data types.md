@@ -16,7 +16,7 @@ A `Person` represents a person.
 
 `Person` is an `interface`.  
 It can be found [here](../../model/index.ts#L7)  
-It is used as a superclass of [`Participant`](#participant), [`ParentGuardian`](#parent-guardian), [`Coach`](#coach), and [`Volunteer`](#volunteer).
+It is used as a superclass of [`Participant`](#Participant), [`ParentGuardian`](#Parent-Guardian), [`Coach`](#Coach), and [`Volunteer`](#Volunteer).
 
 parameters
 ----------
@@ -33,7 +33,7 @@ Phone | phone | The phone number of the person | `string` | yes[*](#person:fn1)
 ### Footnotes
 <style>h4{display: none;}</style>
 
-#### Person:fn1
+#### person:fn1
 <i>*`ParentGuardian` should require at least one contact information.</i><br/>
 
 <Style>h4,p{display:normal;}/*reset*/</Style>
@@ -45,7 +45,7 @@ A `Participant` represents a participant for an event.
 `Participant` is an interface.  
 It can be found [here](../../model/index.ts#L22).  
 `Participant` extends `Person` meaning that it requires parameters from `Person`.  
-Please refer to the documentation of [`Person`](#person) for details.
+Please refer to the documentation of [`Person`](#Person) for details.
 
 parameters
 ----------
@@ -54,19 +54,19 @@ Field | Internal name | Description | Type | Is optional
 Address | `address` | The home address of the participant | `string` | temp[†](#final:fn1)
 Birth Date | `birth_date` | The date upon which the participant was born | `string` | temp[†](#final:fn1)
 Parent/Guardian ID | `parent_guardian_id` | The UUID of the parent/guardian of the participant | `string`|no
-Grade | `grade` | The grade of the participant | `string`|yes[*](#Participant:fn1)
+Grade | `grade` | The grade of the participant | `string`|yes[*](#participant:fn1)
 Transport Assistance | `transport_assistance` | Unknown[††](#final:fn2) | `string` | yes
-Emergency Contact | `emergency_contact` | The emergency contact of the participant (in case of emergency) | `object`<br/><table><tr><th>Field</th><th>Internal Name</th><th>Description</th><th>Type</th><th>Is Optional</th></tr><tr><td>Name</td><td>`emergency_contact.name`</td><td>The name of the contact</td><td>`string[first name, last name]`</td><td>no</td></tr><tr><td>Contact Info</td><td>`emergency_contact.contact_info`</td><td>The contact information of the emergency contact</td><td>`object`<br/><table><tr><th>Field</th><th>Internal Name</th><th>Description</th><th>Type</th><th>Is Optional</th></tr><tr><td>Email</td><td>`emergency_contact.contact_info.email`</td><td>The email address of the contact</td><td>[`Person["email"]`](#L30)</td><td>yes[***](#Participant:fn3)</td></tr><tr><td>Phone Number</td><td>`emergency_contact.contact_info.phone_number`</td><td>The phone number of the contact</td><td>[`Person["phone_number"]`](#L31)</td><td>yes[**](#Participant:fn2)</td></tr></table></table>
+Emergency Contact | `emergency_contact` | The emergency contact of the participant (in case of emergency) | `object`<br/><table><tr><th>Field</th><th>Internal Name</th><th>Description</th><th>Type</th><th>Is Optional</th></tr><tr><td>Name</td><td>`emergency_contact.name`</td><td>The name of the contact</td><td>`string[first name, last name]`</td><td>no</td></tr><tr><td>Contact Info</td><td>`emergency_contact.contact_info`</td><td>The contact information of the emergency contact</td><td>`object`<br/><table><tr><th>Field</th><th>Internal Name</th><th>Description</th><th>Type</th><th>Is Optional</th></tr><tr><td>Email</td><td>`emergency_contact.contact_info.email`</td><td>The email address of the contact</td><td>[`Person["email"]`](#L30)</td><td>yes[***](#participant:fn3)</td></tr><tr><td>Phone Number</td><td>`emergency_contact.contact_info.phone_number`</td><td>The phone number of the contact</td><td>[`Person["phone_number"]`](#L31)</td><td>yes[**](#participant:fn2)</td></tr></table></table>
 Notes | notes | Notes on the participant | `string` | yes
 
 
 ### Footnotes
 <style>h4{display:none;}</style>
 
-#### Participant:fn1
+#### participant:fn1
 <i>*Grade will be added later if applicable (not for participant setup)</i><br/>
 
-#### Participant:fn2
+#### participant:fn2
 <i>**`emergency_contact.contact_info` should require at least one contact information.</i><br/>
 <Style>h4{display:normal;}</Style>
 
