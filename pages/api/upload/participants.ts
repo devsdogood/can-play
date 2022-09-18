@@ -3,7 +3,7 @@ import { Db } from "mongodb";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { hasFileUpload, toJsonRecords } from "../../../lib/file-upload-util";
 import * as mongo from "../../../lib/mongodb";
-import * as model from "../../../model";
+import * as model from "../../../model/event-registration-db";
 
 interface ResponseData {
   message: string;

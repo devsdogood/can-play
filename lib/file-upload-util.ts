@@ -12,7 +12,7 @@ export function hasFileUpload(req: NextApiRequest): boolean {
 export async function toJsonRecords(
   req: NextApiRequest
 ): Promise<Record<string, string>[]> {
-  const files = await saveUploadedFiles(req);
+  const form = await saveUploadedFiles(req);
 
-  return (await Promise.all(files.map(parseCsv))).flat();
+  return (await Promise.all(form.files.map(parseCsv))).flat();
 }
