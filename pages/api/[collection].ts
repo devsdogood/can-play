@@ -23,7 +23,7 @@ export default async function handler(
   ) {
     client
       .collection(collection)
-      .updateOne({ _id: new ObjectId(req.body._id) }, req.body);
+      .updateOne({ _id: new ObjectId(req.body._id) }, { $set: req.body });
 
     res.status(200).send({ message: "Success" });
   } else {

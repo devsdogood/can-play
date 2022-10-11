@@ -82,7 +82,7 @@ export async function getServerSideProps() {
     firstName: doc.name[0],
     lastName: doc.name[1],
     emergencyContactName: doc.emergency_contact.name[0] + " " + doc.emergency_contact.name[1],
-    emergencyContactPhone: doc.emergency_contact.contact_info.phone_number,
+    emergencyContactPhone: doc.emergency_contact.info.phone_number,
   }));
 
   return {

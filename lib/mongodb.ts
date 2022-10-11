@@ -138,5 +138,5 @@ export async function updateEvent(
 ): Promise<void> {
   await mongo
     .collection<model.Event>(CollectionNames.events)
-    .updateOne({ _id: event._id }, event);
+    .updateOne({ _id: event._id }, { $set: event });
 }
