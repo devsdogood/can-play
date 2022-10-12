@@ -15,7 +15,7 @@ export default async function handler(
 ) {
   if (hasFileUpload(req)) {
     try {
-      const prisma = new PrismaClient()
+      const prisma = new PrismaClient();
       // TODO: consolidate into one call
       const fields = (await saveUploadedFiles(_.cloneDeep(req))).fields;
       const records = await toJsonRecords(req);
