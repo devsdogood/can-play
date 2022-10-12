@@ -1,10 +1,20 @@
 import { participants, PrismaClient } from "@prisma/client";
-import Table from "../../components/Table";
-import { participantColumns } from "../../utils/columns";
+import { GetServerSidePropsContext } from "next";
+import Table from "../../../components/Table";
+import { participantColumns } from "../../../utils/columns";
 
-export async function getServerSideProps() {
+export async function getServerSideProps(ctx: GetServerSidePropsContext) {
+  const id = ctx.query.id as string;
+
   const prisma = new PrismaClient();
   const participants = await prisma.participants.findMany({
+    where: {
+        guardians: {
+            some: {
+                id
+            }
+        }
+    },
     include: {
       guardians: true
     }
