@@ -1,4 +1,5 @@
 import { GridColDef } from "@mui/x-data-grid";
+import TableLink from "../components/TableLink";
 import { getAge, getGrade } from "./date";
 
 // TODO: share some of these columns with other tables
@@ -17,6 +18,7 @@ export const volunteerColumns: GridColDef[] = [
     { field: "criminal_history", headerName: "Criminal History", editable: true },
     { field: "refused_participation", headerName: "Refused Participation", type: 'boolean',editable: true },
     { field: "signed_waiver", headerName: "Signed Waiver", type: 'boolean', editable: true },
+    { field: "guardians", headerName: "Guardians", renderCell: (params) => <TableLink id={params.row.id} entity="guardians" link="/guardians/volunteer" /> },
     { field: "mailchimp", headerName: "Mailchimp", editable: true },
     { field: "notes", headerName: "Notes", editable: true },
 ];
@@ -29,6 +31,8 @@ export const guardianColumns: GridColDef[] = [
     { field: "address", headerName: "Address", editable: true },
     { field: "employer", headerName: "Employer", editable: true },
     { field: "paymentmethod", headerName: "Payment method", editable: true },
+    { field: "participants", headerName: "Participants", renderCell: (params) => <TableLink id={params.row.id} entity="participants" link="/participants/guardian" /> },
+    { field: "volunteers", headerName: "Volunteers", renderCell: (params) => <TableLink id={params.row.id} entity="volunteers" link="/volunteers/guardian" /> },
     { field: "mailchimp", headerName: "Mailchimp", editable: true },
     { field: "notes", headerName: "Notes", editable: true },
 ];
@@ -79,5 +83,6 @@ export const participantColumns: GridColDef[] = [
       headerName: "Transportation Assistance",
       editable: true,
     },
+    { field: "guardians", headerName: "Guardians", renderCell: (params) => <TableLink id={params.row.id} entity="guardians" link="/guardians/participant" /> },
     { field: "notes", headerName: "Notes", editable: true },
 ];
