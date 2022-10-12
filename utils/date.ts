@@ -1,4 +1,11 @@
-import { getMonth, getYear } from "date-fns";
+import { differenceInYears, getMonth, getYear, parse } from "date-fns";
+
+export const getAge = (birthdate: string) => {
+    const dob = parse(birthdate, "mm/dd/yy", new Date());
+    const date = new Date();
+  
+    return differenceInYears(date, dob);
+};
 
 export const getGrade = (graduationYear: number) => {
     const date = new Date();
