@@ -1,58 +1,47 @@
-import { Box } from "@mui/material";
-import { DataGrid, GridColDef, GridValueGetterParams } from "@mui/x-data-grid";
-import { parse, differenceInYears, getMonth, getYear } from "date-fns";
-import { connectToDB } from "../lib/mongodb";
+import { GridColDef, GridValueGetterParams } from "@mui/x-data-grid";
+import { PrismaClient } from "@prisma/client";
+import { parse, differenceInYears } from "date-fns";
+import Table from "../components/Table";
 import { Participant } from "../model";
+import { getGrade } from "../utils/date";
 
 const getAge = (params: GridValueGetterParams) => {
-  const dob = parse(params.row.birth_date, "mm/dd/yy", new Date());
+  const dob = parse(params.row.birthdate, "mm/dd/yy", new Date());
   const date = new Date();
 
   return differenceInYears(date, dob);
-};
-
-const getGraduationyear = (params: GridValueGetterParams) => {
-  const grade = parseInt(params.row.grade);
-  const date = new Date();
-  const month = getMonth(date);
-
-  // if after june, add 1 to year
-  const year = month >= 6 ? getYear(date) + 1 : getYear(date);
-
-  return year + (12 - grade);
 };
 
 const columns: GridColDef[] = [
   {
     field: "fullName",
     headerName: "Participant Name",
-    valueGetter: (params) => params.row.firstName + " " + params.row.lastName,
+    valueGetter: (params) => params.row.first_name + " " + params.row.last_name,
   },
-  { field: "firstName", headerName: "Participant First Name", editable: true },
-  { field: "lastName", headerName: "Participant Last Name", editable: true },
+  { field: "first_name", headerName: "First Name", editable: true },
+  { field: "last_name", headerName: "Last Name", editable: true },
   {
-    field: "emergencyContactName",
+    field: "contact_name",
     headerName: "Emergency Contact Name",
     editable: true,
   },
   {
-    field: "emergencyContactPhone",
+    field: "contact_phone",
     headerName: "Emergency Contact Phone",
     editable: true,
   },
-  { field: "email", headerName: "Participant Email", editable: true },
   {
-    field: "birth_date",
-    headerName: "birth_date",
+    field: "birthdate",
+    headerName: "DOB",
     editable: true,
-    type: "date",
   },
-  { field: "age", headerName: "Participant Age", valueGetter: getAge },
-  { field: "grade", headerName: "Grade", editable: true },
+  { field: "age", headerName: "Age", valueGetter: getAge },
+  { field: "grade", headerName: "Grade", valueGetter: (params) => getGrade(params.row.graduation_year) },
   {
-    field: "graduationyear",
+    field: "graduation_year",
     headerName: "Graduation Year",
-    valueGetter: getGraduationyear,
+    valueParser: (value) => parseInt(value),
+    editable: true,
   },
   {
     field: "healthSafetyNeeds",
@@ -73,17 +62,12 @@ const columns: GridColDef[] = [
 ];
 
 export async function getServerSideProps() {
-  const mongo = await connectToDB();
-  const cursor = await mongo.collection("participants").find().toArray();
-  const participants = cursor.map((doc) => ({
-    ...doc,
-    _id: null,
-    id: doc._id.toString(),
-    firstName: doc.name[0],
-    lastName: doc.name[1],
-    emergencyContactName: doc.emergency_contact.name[0] + " " + doc.emergency_contact.name[1],
-    emergencyContactPhone: doc.emergency_contact.info.phone_number,
-  }));
+  const prisma = new PrismaClient();
+  const participants = await prisma.participants.findMany({
+    include: {
+      guardians: true
+    }
+  });
 
   return {
     props: { participants },
@@ -95,20 +79,12 @@ type ParticipantsTableProps = {
 };
 const ParticipantsTable: React.FC<ParticipantsTableProps> = ({
   participants,
-}) => {
-  return (
-    <Box sx={{ height: 400 }}>
-      <DataGrid
-        rows={participants}
-        columns={columns}
-        pageSize={5}
-        rowsPerPageOptions={[5]}
-        checkboxSelection
-        disableSelectionOnClick
-        experimentalFeatures={{ newEditingApi: true }}
-      />
-    </Box>
-  );
-};
+}) => (
+  <Table
+    columns={columns}
+    rows={participants}
+    model="participants"
+  />
+);
 
 export default ParticipantsTable;
