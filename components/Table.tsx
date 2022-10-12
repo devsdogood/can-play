@@ -10,6 +10,9 @@ type TableProps = {
     model: Omit<keyof PrismaClient, "$on" | "$connect" | "$disconnect" | "$use" | "$transaction" | "$runCommandRaw">
 }
 const Table: React.FC<TableProps> = ({ columns, rows, model }) => {
+    // insert explicit width into columns
+    columns.forEach(c => c.width = 150);
+
     const saveEdits = (newRow: any) => {
         const id = newRow.id;
         
