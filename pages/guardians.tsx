@@ -30,10 +30,10 @@ export async function getServerSideProps() {
 
 }
 
-type ParticipantsTableProps = {
+type GuardiansTableProps = {
   guardians: parentguardians[];
 }
-const ParticipantsTable: React.FC<ParticipantsTableProps> = ({ guardians }) => (
+const GuardiansTable: React.FC<GuardiansTableProps> = ({ guardians }) => (
   <Table
     columns={columns}
     rows={guardians}
@@ -41,4 +41,4 @@ const ParticipantsTable: React.FC<ParticipantsTableProps> = ({ guardians }) => (
   />
 )
 
-export default ParticipantsTable;
+export default GuardiansTable;
