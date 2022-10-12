@@ -14,8 +14,7 @@ export default async function handler(
   res: NextApiResponse<Data>
 ) {
   const client = await mongo.connectToDB();
-  const { query } = useRouter();
-  const collection = query.collection as string;
+  const collection = req.query.collection as string;
   if (
     req.method === "PUT" &&
     Object.values(mongo.CollectionNames).includes(collection) &&
