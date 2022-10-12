@@ -86,3 +86,20 @@ export const participantColumns: GridColDef[] = [
     { field: "guardians", headerName: "Guardians", renderCell: (params) => <TableLink id={params.row.id} entity="guardians" link="/guardians/participant" /> },
     { field: "notes", headerName: "Notes", editable: true },
 ];
+
+export const programColumns: GridColDef[] = [
+  { field: "year", headerName: "Year", editable: true },
+  { field: "activity", headerName: "Activity/Sport", editable: true },
+  { field: "location", headerName: "Location", editable: true },
+  { field: "address", headerName: "Address", editable: true },
+  { field: "slots", headerName: "Slots", renderCell: (params) => <TableLink id={params.row.id} entity="event slots" link="/slots/program" /> },
+];
+
+export const slotColumns: GridColDef[] = [
+  { field: "start_date", headerName: "Start Date/Time", editable: true },
+  { field: "end_date", headerName: "End Date/Time", editable: true },
+  { field: "participants", headerName: "Participants", renderCell: (params) => <TableLink id={params.row.id} entity="participants" link="/participants/program" /> },
+  { field: "coaches", headerName: "Coaches", renderCell: (params) => <TableLink id={params.row.id} entity="coaches" link="/coaches/program" /> },
+  { field: "volunteers", headerName: "Volunteers", renderCell: (params) => <TableLink id={params.row.id} entity="volunteers" link="/volunteers/program" /> },
+  { field: "program", headerName: "Program", renderCell: (params) => <TableLink id={params.row.id} entity="program" link="/programs/slot" /> },
+];
