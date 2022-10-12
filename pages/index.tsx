@@ -19,14 +19,13 @@ function DragDropPage() {
   const handleSubmit = (route: string) => {
     if (files) {
       var data = new FormData();
-      console.log(files);
       data.append("file", files[0]);
 
-      if (route=="volunteers"){
+      if (route === "volunteers" || route === "participants"){
         data.append("year", year);
-        data.append("location", year);
-        data.append("sport", year);
-        data.append("programType", year);
+        data.append("location", location);
+        data.append("sport", sport);
+        // data.append("programType", programType);
       }
 
       fetch(`/api/upload/${route}`, {

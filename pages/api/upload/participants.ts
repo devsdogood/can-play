@@ -1,9 +1,9 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
-import { Db } from "mongodb";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { hasFileUpload, toJsonRecords } from "../../../lib/file-upload-util";
-import * as mongo from "../../../lib/mongodb";
-import * as model from "../../../model/event-registration-db";
+import { PrismaClient } from '@prisma/client'
+import { saveUploadedFiles } from "../../../lib/busboy";
+import * as _ from "lodash";
 
 interface ResponseData {
   message: string;
@@ -15,64 +15,152 @@ export default async function handler(
 ) {
   if (hasFileUpload(req)) {
     try {
-      const client = await mongo.connectToDB();
+      const prisma = new PrismaClient()
+      // TODO: consolidate into one call
+      const fields = (await saveUploadedFiles(_.cloneDeep(req))).fields;
       const records = await toJsonRecords(req);
 
-      const event: model.Event = {
-        name: "",
-        start_date: "",
-        end_date: "",
-        coaches: [],
-        volunteers: [],
-        participants: [],
-      };
-
-      for (const record of records) {
-        const registration = transform(record);
-        if (!event.name) {
-          event.name = registration.event.name;
-          event.start_date = registration.event.start_date;
-          event.end_date = registration.event.end_date;
+      // find program based on year, activity, and location
+      let program = await prisma.programs.findFirst({
+        where: {
+          year: parseInt(fields["year"]),
+          activity: fields["sport"],
+          location: fields["location"],
+        },
+        include: {
+          slots: true,
         }
+      });
 
-        const [existingPG, existingParticipant] = await Promise.all([
-          mongo.findParentGuardian(client, registration.parent_guardian),
-          mongo.findParticipant(client, registration.participant),
-        ]);
-
-        const parent_guardian_id = existingPG
-          ? existingPG._id.toHexString()
-          : (
-              await mongo.storeParentGuardian(
-                client,
-                registration.parent_guardian
-              )
-            ).insertedId.toHexString();
-
-        const participant_id = existingParticipant
-          ? existingParticipant._id.toHexString()
-          : (
-              await mongo.storeParticipant(client, {
-                ...registration.participant,
-                parent_guardian_id,
-              })
-            ).insertedId.toHexString();
-
-        event.participants.push({
-          id: participant_id,
-          name: registration.participant.name,
-          attended: false,
-        });
+      // create program if doesn't exist
+      if (!program) {
+        program = await prisma.programs.create({
+          data: {
+            year: parseInt(fields["year"]),
+            activity: fields["sport"],
+            location: fields["location"],
+            address: "Somewhere", // TODO!
+          },
+          include: {
+            slots: true,
+          }
+        })
       }
 
-      const existingEvent = await mongo.findEvent(client, event);
-      if (existingEvent) {
-        await mongo.updateEvent(client, {
-          ...event,
-          _id: existingEvent._id,
+      // iterate over each registration
+      for (const record of records) {
+        const slotData = {
+          start: record["Start Date & Time"],
+          end: record["End Date & Time"],
+        };
+
+        // find slot with start/end dates
+        let slot = await prisma.event_slots.findFirst({
+          where: {
+            start_date: slotData.start,
+            end_date: slotData.end,
+            programs: {
+              some: {
+                id: program.id,
+              }
+            }
+          }
         });
-      } else {
-        await mongo.storeEvent(client, event);
+
+        // create slot if doesn't already exist
+        if (!slot) {
+          slot = await prisma.event_slots.create({
+            data: {
+              start_date: slotData.start,
+              end_date: slotData.end,
+            },
+          })!;
+        }
+
+        // upsert guardian data
+        const guardianData = _.pick(record, ["Name", "Email", "Parent/Guardian Phone Number", "Address"]);
+        const guardian = await prisma.parentguardians.upsert({
+          where: {
+            email: guardianData["Email"],
+          },
+          create: {
+            email: guardianData["Email"],
+            first_name: guardianData["Name"].split(" ")[0], // TODO: more robust name checking
+            last_name: guardianData["Name"].split(" ")[1],
+            phone: guardianData["Parent/Guardian Phone Number"],
+            address: guardianData["Address"],
+            employer: "None",
+            notes: "None",
+          },
+          // TODO: don't copy all these fields
+          update: {
+            first_name: guardianData["Name"].split(" ")[0],
+            last_name: guardianData["Name"].split(" ")[1],
+            phone: guardianData["Parent/Guardian Phone Number"],
+            address: guardianData["Address"],
+            employer: "None",
+            notes: "None",
+          }
+        });
+
+        // check participant exists
+        let participantData = _.pick(record, ["Emergency contact name (if different)", "Emergency contact phone (if different)", "Participant's  name ", "Participant's  age", "Participant's grade", "Participant's date of birth  (MM/DD/YYYY)", "Please list food restrictions for participant"])
+        let participant = await prisma.participants.findFirst({
+          where: {
+            first_name: participantData["Participant's  name "].split(" ")[0],
+            last_name: participantData["Participant's  name "].split(" ")[1],
+            birthdate: participantData["Participant's date of birth  (MM/DD/YYYY)"],
+            guardians: {
+              some: {
+                id: guardian.id,
+              }
+            }
+          }
+        });
+
+        if (!participant) {
+          participant = await prisma.participants.create({
+            data: {
+              first_name: participantData["Participant's  name "].split(" ")[0],
+              last_name: participantData["Participant's  name "].split(" ")[1],
+              birthdate: participantData["Participant's date of birth  (MM/DD/YYYY)"],
+              contact_name: participantData["Emergency contact name (if different)"],
+              contact_phone: participantData["Emergency contact phone (if different)"],
+              food_restrictions: participantData["Please list food restrictions for participant"],
+              graduation_year: 2000, // TODO
+              transportation_assistance: "None", // TODO
+              health_needs: "None", // TODO
+              notes: "None", // TODO
+              guardians: {
+                connect: {
+                  id: guardian.id,
+                }
+              }
+            }
+          });
+        }
+
+        console.log(slot);
+
+        // add participant to slot
+        await prisma.event_slots.update({
+          where: {
+            id: slot.id,
+          },
+          data: {
+            participants: {
+              push: {
+                participantId: participant.id,
+                attended: false,
+              }
+            },
+            programs: {
+              connect: {
+                id: program.id,
+              }
+            }
+          }
+        })
       }
 
       res.status(200).send({ message: "Success" });
@@ -83,48 +171,6 @@ export default async function handler(
   } else {
     res.status(400).send({ message: "Bad Request" });
   }
-}
-
-function transform(record: Record<string, string>): model.EventRegistration {
-  const event = <model.Event>{
-    name: record["Event"],
-    start_date: record["Start Date & Time"],
-    end_date: record["End Date & Time"],
-  };
-  const parent_guardian: model.ParentGuardian = {
-    name: record["Name"]?.split(" ") || [],
-    phone_number: record["Parent/Guardian Phone Number"],
-    email: record["Email"],
-    employer: record["employer"],
-    address: record["Address"],
-    payment_method: {
-      payment_id: record["Transaction ID"],
-      amount: record["Total price"],
-    },
-  };
-  const participant: model.Participant = {
-    parent_guardian_id: "",
-    name: record["Participant's  name "]?.split(" ") || [],
-    birth_date: record["Participant's date of birth  (MM/DD/YYYY)"],
-    grade: record["Participant's grade"],
-    tshirt_size: record["Participant's T-shirt size"],
-    address: record["Address"],
-    food_restrictions: record["Please list food restrictions for participant"],
-    notes: record["Attachments"],
-    emergency_contact: {
-      name: record["Emergency contact name (if different)"]?.split(" "),
-      contact_info: {
-        phone_number: record["Emergency contact phone (if different)"],
-      },
-    },
-    attended: false,
-  };
-
-  return {
-    event,
-    parent_guardian,
-    participant,
-  };
 }
 
 export const config = {
