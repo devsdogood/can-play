@@ -1,9 +1,6 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
+import { PrismaClient } from "@prisma/client";
 import type { NextApiRequest, NextApiResponse } from "next";
-import { useRouter } from "next/router";
-import * as mongo from "../../lib/mongodb";
-import { ObjectId } from "mongodb";
-import * as model from "../../model/event-registration-db";
 
 type Data = {
   message: string;
@@ -13,22 +10,23 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
 ) {
-  const client = await mongo.connectToDB();
+  const prisma = new PrismaClient();
   const collection = req.query.collection as string;
-  if (
-    req.method === "PUT" &&
-    Object.values(mongo.CollectionNames).includes(collection) &&
-    req?.body?._id
-  ) {
-    client
-      .collection(collection)
-      .updateOne({ _id: new ObjectId(req.body._id) }, { $set: req.body });
+  const data = req.body;
 
-    res.status(200).send({ message: "Success" });
-  } else {
-    console.warn(
-      `URL path must be one of ${Object.values(mongo.CollectionNames)}`
-    );
-    res.status(400).send({ message: "Bad Request" });
+  const models = Object.keys(prisma).filter(k => !(k.startsWith("$") || k.startsWith("_")));
+  if (!models.includes(collection)) {
+    return res.status(400).send({ message: "Collection does not exist" });
   }
+
+  // type safety: collection must exist
+  // @ts-ignore
+  const update = await prisma[collection].update({
+    where: {
+      id: data.id,
+    },
+    data: data.data,
+  });
+  
+  res.status(200).send({ message: "Updated data" })
 }
