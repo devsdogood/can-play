@@ -97,9 +97,7 @@ export default async function handler(
             first_name: guardianData["Name"].split(" ")[0],
             last_name: guardianData["Name"].split(" ")[1],
             phone: guardianData["Parent/Guardian Phone Number"],
-            address: guardianData["Address"],
-            employer: "None",
-            notes: "None",
+            address: guardianData["Address"]
           }
         });
 
@@ -139,8 +137,6 @@ export default async function handler(
             }
           });
         }
-
-        console.log(slot);
 
         // add participant to slot
         await prisma.event_slots.update({
