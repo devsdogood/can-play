@@ -1,0 +1,114 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("MONGODB_URI")
+}
+
+type EventSlotsCoaches {
+  attended Boolean
+  coachId  String  @db.ObjectId
+}
+
+type EventSlotsParticipants {
+  attended      Boolean
+  participantId String  @db.ObjectId
+}
+
+type EventSlotsVolunteers {
+  attended    Boolean
+  volunteerId String  @db.ObjectId
+}
+
+model coaches {
+  id                     String  @id @default(auto()) @map("_id") @db.ObjectId
+  address                String
+  background_check_date  String
+  email                  String  @unique
+  employer               String
+  expertise              String
+  first_name             String
+  last_name              String
+  notes                  String
+  payment_info           String
+  payment_preference     String
+  phone                  String
+  school                 String
+  signed_handbook        Boolean
+  signed_job_description Boolean
+  training_date          String
+}
+
+model event_slots {
+  id           String                   @id @default(auto()) @map("_id") @db.ObjectId
+  coaches      EventSlotsCoaches[]
+  end_date     String
+  participants EventSlotsParticipants[]
+  start_date   String
+  volunteers   EventSlotsVolunteers[]
+  programIds   String[]                 @db.ObjectId
+  programs     programs[]               @relation(fields: [programIds], references: [id])
+}
+
+model parentguardians {
+  id             String         @id @default(auto()) @map("_id") @db.ObjectId
+  address        String
+  email          String         @unique
+  employer       String         @default("None")
+  first_name     String
+  last_name      String
+  notes          String         @default("None")
+  phone          String
+  participantIds String[]       @db.ObjectId
+  participants   participants[] @relation(fields: [participantIds], references: [id])
+  volunteerIds   String[]       @db.ObjectId
+  volunteers     volunteers[]   @relation(fields: [volunteerIds], references: [id])
+}
+
+model participants {
+  id                        String            @id @default(auto()) @map("_id") @db.ObjectId
+  birthdate                 String
+  contact_name              String
+  contact_phone             String
+  first_name                String
+  food_restrictions         String
+  graduation_year           Int
+  guardianIds               String[]          @db.ObjectId
+  guardians                 parentguardians[] @relation(fields: [guardianIds], references: [id])
+  health_needs              String
+  last_name                 String
+  notes                     String
+  transportation_assistance String
+}
+
+model programs {
+  id       String        @id @default(auto()) @map("_id") @db.ObjectId
+  activity String
+  address  String
+  location String
+  slotIds  String[]      @db.ObjectId
+  slots    event_slots[] @relation(fields: [slotIds], references: [id])
+  year     Int
+}
+
+model volunteers {
+  id                    String            @id @default(auto()) @map("_id") @db.ObjectId
+  address               String
+  age                   Int
+  background_check_date String
+  criminal_history      String
+  email                 String            @unique
+  employer              String
+  first_name            String
+  guardianIds           String[]          @db.ObjectId
+  guardians             parentguardians[] @relation(fields: [guardianIds], references: [id])
+  last_name             String
+  notes                 String
+  phone                 String
+  refused_participation Boolean
+  school                String
+  signed_waiver         Boolean
+  volunteer_preference  String
+}
