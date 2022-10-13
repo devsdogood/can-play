@@ -71,22 +71,6 @@ function DragDropPage() {
         </div>
       </div>
 
-      <div id="coach">
-        <div {...getRootProps({ className: styles.coach })}>
-          <input {...getInputProps()} />
-          {isDragActive ? (
-            <p>Drop the files here ...</p>
-          ) : (
-            <p>Drag and drop a CSV file for coaches</p>
-          )}
-        </div>
-        <div className={styles.button2}>
-          <Button variant="contained" onClick={() => handleSubmit("coaches")}>
-            Submit
-          </Button>
-        </div>
-      </div>
-
       <div id="volunteer">
         <div {...getRootProps({ className: styles.volunteer })}>
           <input {...getInputProps()} />
@@ -109,18 +93,6 @@ function DragDropPage() {
           <TextField id="year" label="Year" variant="outlined" placeholder="2022" className={styles.year} onChange={(e) => setYear(e.target.value)} />
           <TextField id="location" label="Location" variant="outlined" placeholder="200 Example" onChange={(e) => setLocation(e.target.value)} />
           <TextField id="Sport" label="Sport" variant="outlined" placeholder="Football" onChange={(e) => setSport(e.target.value)} />
-          <FormControl >
-            <FormLabel id="demo-radio-buttons-group-label">Program Type</FormLabel>
-            <RadioGroup
-              aria-labelledby="demo-radio-buttons-group-label"
-              name="radio-buttons-group"
-              onChange={(e) => setProgramType(e.target.value)}
-            >
-            <FormControlLabel value="Opportunity" control={<Radio />} label="Opportunity" />
-            <FormControlLabel value="Courage" control={<Radio />} label="Courage" />
-            </RadioGroup>
-          </FormControl>
-
         </div>
         </div>
       </div>
