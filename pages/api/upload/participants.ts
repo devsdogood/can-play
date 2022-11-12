@@ -3,6 +3,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { hasFileUpload, toJsonRecords } from "../../../lib/file-upload-util";
 import { PrismaClient } from '@prisma/client'
 import { saveUploadedFiles } from "../../../lib/busboy";
+import { registrationColumns as cols } from "../../../utils/csv-columns";
 import * as _ from "lodash";
 
 interface ResponseData {
@@ -50,8 +51,8 @@ export default async function handler(
       // iterate over each registration
       for (const record of records) {
         const slotData = {
-          start: record["Start Date & Time"],
-          end: record["End Date & Time"],
+          start: record[cols.start],
+          end: record[cols.end],
         };
 
         // find slot with start/end dates
@@ -78,36 +79,39 @@ export default async function handler(
         }
 
         // upsert guardian data
-        const guardianData = _.pick(record, ["Name", "Email", "Parent/Guardian Phone Number", "Address"]);
+        const guardianData = _.pick(record, Object.values(cols.parent));
         const guardian = await prisma.parentguardians.upsert({
           where: {
-            email: guardianData["Email"],
+            email: guardianData[cols.parent.email],
           },
           create: {
-            email: guardianData["Email"],
-            first_name: guardianData["Name"].split(" ")[0], // TODO: more robust name checking
-            last_name: guardianData["Name"].split(" ")[1],
-            phone: guardianData["Parent/Guardian Phone Number"],
-            address: guardianData["Address"],
-            employer: "None",
+            email: guardianData[cols.parent.email],
+            first_name: guardianData[cols.parent.name].split(" ")[0], // TODO: more robust name checking
+            last_name: guardianData[cols.parent.name].split(" ")[1],
+            phone: guardianData[cols.parent.phone],
+            address: guardianData[cols.parent.address],
+            employer: guardianData[cols.parent.employer],
             notes: "None",
           },
           // TODO: don't copy all these fields
           update: {
-            first_name: guardianData["Name"].split(" ")[0],
-            last_name: guardianData["Name"].split(" ")[1],
-            phone: guardianData["Parent/Guardian Phone Number"],
-            address: guardianData["Address"]
+            email: guardianData[cols.parent.email],
+            first_name: guardianData[cols.parent.name].split(" ")[0], // TODO: more robust name checking
+            last_name: guardianData[cols.parent.name].split(" ")[1],
+            phone: guardianData[cols.parent.phone],
+            address: guardianData[cols.parent.address],
+            employer: guardianData[cols.parent.employer],
           }
         });
 
         // check participant exists
-        let participantData = _.pick(record, ["Emergency contact name (if different)", "Emergency contact phone (if different)", "Participant's  name ", "Participant's  age", "Participant's grade", "Participant's date of birth  (MM/DD/YYYY)", "Please list food restrictions for participant"])
+        const participantCols = Object.values(cols.participant).concat(Object.values(cols.emergency)); 
+        const participantData = _.pick(record, participantCols)
         let participant = await prisma.participants.findFirst({
           where: {
-            first_name: participantData["Participant's  name "].split(" ")[0],
-            last_name: participantData["Participant's  name "].split(" ")[1],
-            birthdate: participantData["Participant's date of birth  (MM/DD/YYYY)"],
+            first_name: participantData[cols.participant.name].split(" ")[0],
+            last_name: participantData[cols.participant.name].split(" ")[1],
+            birthdate: participantData[cols.participant.dob],
             guardians: {
               some: {
                 id: guardian.id,
@@ -119,12 +123,12 @@ export default async function handler(
         if (!participant) {
           participant = await prisma.participants.create({
             data: {
-              first_name: participantData["Participant's  name "].split(" ")[0],
-              last_name: participantData["Participant's  name "].split(" ")[1],
-              birthdate: participantData["Participant's date of birth  (MM/DD/YYYY)"],
-              contact_name: participantData["Emergency contact name (if different)"],
-              contact_phone: participantData["Emergency contact phone (if different)"],
-              food_restrictions: participantData["Please list food restrictions for participant"],
+              first_name: participantData[cols.participant.name].split(" ")[0],
+              last_name: participantData[cols.participant.name].split(" ")[1],
+              birthdate: participantData[cols.participant.dob],
+              contact_name: participantData[cols.emergency.name],
+              contact_phone: participantData[cols.emergency.phone],
+              food_restrictions: participantData[cols.participant.food_restrictions],
               graduation_year: 2000, // TODO
               transportation_assistance: "None", // TODO
               health_needs: "None", // TODO

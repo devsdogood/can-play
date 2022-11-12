@@ -54,11 +54,11 @@ model event_slots {
 
 model parentguardians {
   id             String         @id @default(auto()) @map("_id") @db.ObjectId
-  address        String
+  address        String         @default("None")
   email          String         @unique
   employer       String         @default("None")
   first_name     String
-  last_name      String
+  last_name      String         @default("")
   notes          String         @default("None")
   phone          String
   participantIds String[]       @db.ObjectId
@@ -70,17 +70,17 @@ model parentguardians {
 model participants {
   id                        String            @id @default(auto()) @map("_id") @db.ObjectId
   birthdate                 String
-  contact_name              String
-  contact_phone             String
+  contact_name              String            @default("None")
+  contact_phone             String            @default("None")
   first_name                String
-  food_restrictions         String
-  graduation_year           Int
+  food_restrictions         String            @default("None")
+  graduation_year           Int               @default(0)
   guardianIds               String[]          @db.ObjectId
   guardians                 parentguardians[] @relation(fields: [guardianIds], references: [id])
-  health_needs              String
-  last_name                 String
-  notes                     String
-  transportation_assistance String
+  health_needs              String            @default("None")
+  last_name                 String            @default("")
+  notes                     String            @default("None")
+  transportation_assistance String            @default("None")
 }
 
 model programs {
