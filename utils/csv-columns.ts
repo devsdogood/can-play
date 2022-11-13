@@ -1,3 +1,7 @@
+import { flatten } from "lodash";
+
+type ColumnDefinition = Record<string, string | Record<string, string>>;
+
 export const registrationColumns = {
     start: "Start Date &amp; Time",
     end: "End Date &amp; Time",
@@ -18,3 +22,11 @@ export const registrationColumns = {
         phone: "Emergency contact phone (if different)",
     },
 };
+
+export const columnsToArray = (cols: ColumnDefinition): string[] => {
+    const vals = Object.values(cols).map(
+        col => typeof col === 'string' ? col : Object.values(col)
+    );
+
+    return flatten(vals);
+}

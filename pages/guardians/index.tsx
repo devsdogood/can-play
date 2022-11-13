@@ -1,7 +1,7 @@
 import { parentguardians, PrismaClient } from "@prisma/client";
 import * as _ from "lodash";
 import Table from "../../components/Table";
-import { guardianColumns } from "../../utils/columns";
+import { guardianColumns } from "../../utils/grid-columns";
 
 export async function getServerSideProps() {
   const prisma = new PrismaClient();

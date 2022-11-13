@@ -1,7 +1,7 @@
 import { volunteers, PrismaClient } from "@prisma/client";
 import { GetServerSidePropsContext } from "next";
 import Table from "../../../components/Table";
-import { volunteerColumns } from "../../../utils/columns";
+import { volunteerColumns } from "../../../utils/grid-columns";
 
 export async function getServerSideProps(ctx: GetServerSidePropsContext) {
   const id = ctx.query.id as string;

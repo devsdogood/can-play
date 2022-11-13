@@ -18,7 +18,13 @@ export default async function handler(
       const prisma = new PrismaClient()
       // TODO: consolidate into one call
       const fields = (await saveUploadedFiles(_.cloneDeep(req))).fields;
-      const records = await toJsonRecords(req);
+      
+      let records: Record<string, string>[];
+      try {
+        records = await toJsonRecords(req, "volunteers");
+      } catch (e: any) {
+        return res.status(400).send({ message: e.message })
+      }
 
       // find program based on year, activity, and location
       let program = await prisma.programs.findFirst({

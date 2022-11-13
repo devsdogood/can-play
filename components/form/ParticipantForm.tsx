@@ -15,7 +15,7 @@ const NonCoachForm: React.FC<ParticipantFormProps> = ({ route }) => {
     const [files, setFiles] = useState<FilePondFile[]>([]);
 
     const handleSubmit = async (formValues: Record<string, any>, helpers: FormikHelpers<any>) => {
-        if (files.length > 0) {
+        if (files.length) {
             // append file to form data
             var data = new FormData();
             data.append("file", files[0].file);
@@ -24,14 +24,16 @@ const NonCoachForm: React.FC<ParticipantFormProps> = ({ route }) => {
             Object.entries(formValues).forEach(([k, v]) => data.append(k, v));
 
             // POST to upload route
-            try {
-                await fetch(`/api/upload/${route}`, {
-                    method: "POST",
-                    body: data,
-                });
-            } catch (e) {
+            const response = await fetch(`/api/upload/${route}`, {
+                method: "POST",
+                body: data,
+            });
+
+            // handle parsing/server errors
+            if (!response.ok) {
+                const message = JSON.parse(await response.text()).message;
                 helpers.setErrors({
-                    file: "There was an error processing your file. Please try again or contact administrators."
+                    file: `Error parsing your file. ${message}`,
                 });
             }
         } else {
@@ -99,7 +101,7 @@ const NonCoachForm: React.FC<ParticipantFormProps> = ({ route }) => {
                             </Grid>
                             <Grid item m={2}>
                                 <ErrorMessage name="file">
-                                    { msg => <div style={{ color: 'red' }}>Error: {msg}</div> }
+                                    { msg => <div style={{ color: 'red' }}>{msg}</div> }
                                 </ErrorMessage>
                             </Grid>
                         </Grid>

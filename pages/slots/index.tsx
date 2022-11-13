@@ -1,6 +1,6 @@
 import { event_slots, PrismaClient } from "@prisma/client";
 import Table from "../../components/Table";
-import { slotColumns } from "../../utils/columns";
+import { slotColumns } from "../../utils/grid-columns";
 
 export async function getServerSideProps() {
   const prisma = new PrismaClient();

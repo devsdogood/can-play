@@ -10,9 +10,11 @@ export function hasFileUpload(req: NextApiRequest): boolean {
 }
 
 export async function toJsonRecords(
-  req: NextApiRequest
+  req: NextApiRequest,
+  uploadType: "participants" | "volunteers", // TODO: consolidate this type into an enum?
 ): Promise<Record<string, string>[]> {
   const form = await saveUploadedFiles(req);
 
-  return (await Promise.all(form.files.map(parseCsv))).flat();
+  const records = form.files.map((f) => parseCsv(f, uploadType));
+  return (await Promise.all(records)).flat();
 }

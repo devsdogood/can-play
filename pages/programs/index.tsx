@@ -1,6 +1,6 @@
 import { programs, PrismaClient } from "@prisma/client";
 import Table from "../../components/Table";
-import { programColumns } from "../../utils/columns";
+import { programColumns } from "../../utils/grid-columns";
 
 export async function getServerSideProps() {
   const prisma = new PrismaClient();
