@@ -33,6 +33,7 @@ export default async function handler(
           year: parseInt(fields["year"]),
           activity: fields["sport"],
           location: fields["location"],
+          address: fields["address"],
         },
         include: {
           slots: true,
@@ -46,7 +47,7 @@ export default async function handler(
             year: parseInt(fields["year"]),
             activity: fields["sport"],
             location: fields["location"],
-            address: "Somewhere", // TODO!
+            address: fields["address"],
           },
           include: {
             slots: true,

@@ -12,6 +12,9 @@ const uploadSchema = yup.object({
     sport: yup
         .string()
         .required("Sport is required"),
+    address: yup
+        .string()
+        .required("Address is required"),
 });
 
 export default uploadSchema;

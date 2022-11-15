@@ -52,12 +52,13 @@ const NonCoachForm: React.FC<ParticipantFormProps> = ({ route }) => {
                     year: new Date().getFullYear(),
                     location: "",
                     sport: "",
+                    address: "",
                     file: "",
                 }}
                 validationSchema={uploadSchema}
                 onSubmit={handleSubmit}
             >
-                {({ submitForm, isSubmitting, errors }) => (
+                {({ submitForm, isSubmitting }) => (
                     <Form>
                         <Grid
                             container
@@ -87,6 +88,14 @@ const NonCoachForm: React.FC<ParticipantFormProps> = ({ route }) => {
                                     name="sport"
                                     type="text"
                                     label="Sport"
+                                />
+                            </Grid>
+                            <Grid item m={2}>
+                                <Field
+                                    component={TextField}
+                                    name="address"
+                                    type="text"
+                                    label="Address"
                                 />
                             </Grid>
                             <Grid item m={2}>
