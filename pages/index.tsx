@@ -23,7 +23,7 @@ function DragDropPage() {
         <NonCoachForm route="participants" />
       </TabPanel>
       <TabPanel value={tabValue} index={1}>
-        <NonCoachForm route="volunteers" />
+        Volunteer Upload Form (WIP)
       </TabPanel>
       <TabPanel value={tabValue} index={2}>
         Coach Upload Form (WIP)
