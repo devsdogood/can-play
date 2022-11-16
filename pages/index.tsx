@@ -11,7 +11,7 @@ function DragDropPage() {
   const [tabValue, setTabValue] = React.useState(0);
 
   return (
-    <Container>
+    <Container sx={{ mt: 6 }}>
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }} mb={1}>
         <Tabs value={tabValue} onChange={(_, v) => setTabValue(v)} aria-label="File upload tabs">
           <Tab label="Participants" />
