@@ -114,9 +114,12 @@ const Navbar = () => {
           </Link>
           <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
             {pages.map((page) => (
-              <Link href={`/${page}`} passHref>
+              <Link
+                key={page}
+                href={`/${page}`}
+                passHref
+              >
                 <Button
-                  key={page}
                   onClick={handleCloseNavMenu}
                   sx={{ my: 2, color: "white", display: "block" }}
                 >
